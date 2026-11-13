@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>让科幻好故事，遇见全球创造力 · WaytoAGI × 科梦</title>
+<style>
+@font-face{font-family:"HND";src:url(assets/8eba18902139b49880aa.woff2) format("woff2");font-weight:400}
+@font-face{font-family:"HND";src:url(assets/69f3123f289823f8e916.woff2) format("woff2");font-weight:500}
+@font-face{font-family:"HND";src:url(assets/14c1ffb09a54ed27d960.woff2) format("woff2");font-weight:700}
+/* WaytoAGI 统一设计基线 v1.2 · 演示模式（21:9 画布 2520×1080） */
+:root{
+  --brand-gray:#efefef; --brand-red:#ff4900; --brand-lime:#d4ff70; --brand-lilac:#dec7e2;
+  --brand-cyan:#00c0ff; --brand-green:#00a158; --brand-violet:#c18eff; --brand-blue:#0032ff;
+  --canvas:var(--brand-gray); --surface:#ffffff; --sunken:#e1e1e1;
+  --ink:#151515; --ink-2:#232323; --muted:#626262; --muted-inv:#bdbdbd; --line:#d5d5d5;
+  --font-sans:"Source Han Sans SC","Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  --font-display:"HND","Avenir Next","Avenir","Helvetica Neue",var(--font-sans);
+  --font-mono:"SFMono-Regular","SF Mono","Roboto Mono",Consolas,monospace;
+  --ease:cubic-bezier(0.2,0,0,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;background:#000;overflow:hidden}
+body{font-family:var(--font-sans);color:var(--ink);-webkit-font-smoothing:antialiased}
+#viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+#stage{width:2520px;height:1080px;position:relative;transform-origin:center center;flex:none}
+.slide{position:absolute;inset:0;background:var(--canvas);overflow:hidden;opacity:0;visibility:hidden;transition:opacity .5s var(--ease),visibility .5s}
+.slide.on{opacity:1;visibility:visible}
+.slide .in{opacity:0;transform:translateY(8px);transition:opacity .5s var(--ease),transform .5s var(--ease)}
+.slide.on .in{opacity:1;transform:none}
+.slide.on .d1{transition-delay:.08s}.slide.on .d2{transition-delay:.16s}.slide.on .d3{transition-delay:.24s}
+@media (prefers-reduced-motion:reduce){.slide .in{transform:none!important}}
+
+/* 页框：顶栏 Logo / 章节标签 / 页码；底栏 主题句 + 共学共创共享共进；量子蓝进度条 */
+.frame-top{position:absolute;left:126px;right:126px;top:0;height:112px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+.frame-top img{height:40px;display:block}
+.frame-top .lab{font:500 18px var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.frame-top .lab b{color:var(--ink);font-family:var(--font-sans);letter-spacing:0;font-size:20px;margin-right:16px;text-transform:none}
+.frame-bot{position:absolute;left:126px;right:126px;bottom:0;height:92px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--line);font-size:20px;color:var(--muted)}
+.frame-bot .mono{font:500 17px var(--font-mono);letter-spacing:.08em}
+.slide.inverse .frame-top,.slide.inverse .frame-bot{border-color:#3a3a3a}
+.slide.violet .frame-top,.slide.violet .frame-bot{border-color:rgba(21,21,21,.25)}
+.slide.violet .frame-top .lab,.slide.violet .frame-bot{color:var(--ink)}
+
+.body{position:absolute;left:126px;right:126px;top:112px;bottom:92px;display:flex;flex-direction:column;justify-content:center}
+
+/* 字 */
+h1{font-weight:700;font-size:84px;line-height:1.18;letter-spacing:0}
+h1.hero{font-size:136px;line-height:1.14}
+mark{background:var(--brand-lime);color:var(--ink);padding:0 .08em}
+.en{font-family:var(--font-display);font-weight:500;font-size:30px;color:var(--muted);margin-top:18px;letter-spacing:.005em}
+.mono{font-family:var(--font-mono);font-weight:500;letter-spacing:.08em;text-transform:uppercase}
+.muted{color:var(--muted)}
+.num{font-family:var(--font-display);font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.lead{font-size:30px;line-height:1.75;color:var(--muted)}
+
+/* 组件 */
+.row{display:flex;gap:24px}
+.card{background:var(--surface);position:relative;padding:40px 44px}
+.card.tl::before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:var(--c,var(--brand-cyan))}
+.card.lime{background:var(--brand-lime)}
+.card.inv{background:var(--ink);color:#fff}
+.card h3{font-size:40px;font-weight:600;line-height:1.35}
+.card .tag{font:500 17px var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+.card p{font-size:27px;line-height:1.75;color:var(--muted);margin-top:18px}
+.card.inv p,.card.inv .tag{color:var(--muted-inv)}
+.ph{background:var(--sunken);display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);font-size:22px;gap:8px;text-align:center;position:relative;overflow:hidden;cursor:copy;outline:2px dashed #c4c4c4;outline-offset:-2px}
+.ph small{font:500 15px var(--font-mono);letter-spacing:.08em;text-transform:uppercase}
+.ph.drag{outline-color:var(--brand-blue)}
+.ph.filled{outline:none}
+.ph img,.ph video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cap{font-size:22px;color:var(--muted);margin-top:14px;line-height:1.5}
+.arrow{font-family:var(--font-display);font-size:40px;color:var(--ink);display:flex;align-items:center}
+
+/* 台阶 */
+.steps{display:flex;align-items:flex-end;gap:0}
+.steps i{display:block;width:var(--w,120px)}
+
+/* 讲稿 / 进度 */
+#notes{position:fixed;left:0;right:0;bottom:0;max-height:42vh;overflow:auto;background:rgba(21,21,21,.96);color:#eee;font:16px/1.75 var(--font-sans);padding:18px 28px 26px;display:none;z-index:10;white-space:pre-wrap}
+#notes.show{display:block}
+#hint{position:fixed;right:16px;bottom:10px;color:#9a9a9a;font:12px var(--font-mono);z-index:11;pointer-events:none}
+#prog{position:fixed;left:0;bottom:0;height:4px;background:var(--brand-blue);transition:width .4s var(--ease);z-index:12}
+/* v4 图片与数据 */
+.pic{position:relative;overflow:hidden;background:var(--sunken);margin:0}
+.pic img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.pic.contain img{object-fit:contain;background:#fff}
+.pic figcaption{position:absolute;left:0;bottom:0;background:var(--ink);color:#fff;font-size:19px;line-height:1.3;padding:8px 14px}
+.stat .num{font-size:var(--n,84px);line-height:1}
+.stat .num small{font-size:.42em;font-weight:500;margin-left:4px;font-family:var(--font-sans)}
+.stat .l{font-size:22px;color:var(--muted);margin-top:10px}
+.chip{display:inline-block;font-size:21px;padding:6px 14px;background:#fff;margin:0 8px 8px 0}
+.yr{font-family:var(--font-display);font-weight:700;font-size:44px;line-height:1}
+
+.source-foot{font-size:21px;color:var(--muted);line-height:1.5;margin-top:22px}
+.review-bar{position:fixed;top:10px;left:14px;z-index:30;display:flex;align-items:center;gap:7px;font:12px var(--font-sans)}
+.review-bar span,.review-bar button{background:#fff;color:#222;border:1px solid #ddd;padding:7px 10px;border-radius:5px;box-shadow:0 2px 12px #0001}
+.review-bar span{background:#fff2cb;border-color:#ecd18c}.review-bar button{cursor:pointer;font:inherit}.review-bar button:hover{background:#d4ff70}.review-bar[hidden]{display:none}
+#review-shade{position:fixed;inset:0;background:#0007;z-index:39}#review-panel{position:fixed;right:0;top:0;bottom:0;width:min(660px,100vw);background:#fafafa;color:#222;z-index:40;overflow:auto;padding:26px;font:15px/1.7 var(--font-sans);box-shadow:-12px 0 50px #0003}
+#review-panel[hidden],#review-shade[hidden]{display:none}#review-panel h2{font-size:24px;margin:0 40px 8px 0}#review-panel h3{font-size:17px;margin:24px 0 8px}#review-panel p{margin:8px 0}#review-panel a{color:#0032ff;overflow-wrap:anywhere}#review-panel .review-card{background:#fff;border:1px solid #ddd;padding:16px;margin-top:12px;border-radius:6px}#review-panel .pending{background:#fff4cf;padding:15px;margin:15px 0}#review-panel small{color:#626262}#review-close{position:sticky;float:right;top:0;background:#222;color:#fff;border:0;border-radius:4px;padding:8px 12px;cursor:pointer}#review-panel button.jump{color:#0032ff;background:white;border:1px solid #ccc;padding:7px 10px;cursor:pointer;margin:8px 0}#review-panel code{font-size:12px;overflow-wrap:anywhere}#review-panel ul{padding-left:20px}#review-panel details{margin:12px 0}
+@media(max-width:700px){.review-bar{top:5px;left:5px;font-size:10px;gap:4px}.review-bar span,.review-bar button{padding:5px 6px}}
+@media print{@page{size:420mm 180mm;margin:0}html,body{overflow:visible;height:auto;background:white}#viewport{display:block;position:static}#stage{transform:none!important;width:2520px;height:auto;zoom:0.63}.slide{position:relative;width:2520px;height:1080px;opacity:1;visibility:visible;page-break-after:always}.slide .in{opacity:1;transform:none}#notes,#hint,#prog,.review-bar,#review-panel,#review-shade{display:none!important}}
+
+/* JoJo confirmed: horizontal gala; original poster wall with two focal adjustments; full-frame CCS crop. */
+.gala-horizontal{display:flex;overflow:hidden;margin:0;background:linear-gradient(110deg,#800414,#b41020 55%,#b81522);color:#ffe5aa}
+.gala-copy{flex:1;min-width:0;padding:34px 35px;display:flex;flex-direction:column;justify-content:center}
+.gala-year{font-size:32px;line-height:1.25;letter-spacing:.08em}
+.gala-title{font-size:80px;line-height:1.15;font-weight:750;margin:12px 0;white-space:nowrap}
+.gala-sub{font-size:25px;line-height:1.4;color:#ffe9c7}
+.gala-tagline{margin-top:22px}
+.gala-horizontal .gala-poster{position:static;display:block;width:31%;height:100%;object-fit:contain;flex-shrink:0;background:#bf1927}
+.poster-fill .pic img{object-fit:cover;object-position:center}
+.poster-fill .pic img.poster-faces{object-position:50% 20%}
+.poster-fill .pic img.poster-head{object-position:50% 35%}
+.approved-ccs{position:absolute;inset:0;display:block;width:100%;height:100%;overflow:hidden;background:#121212}
+
+/* v4: targeted image framing approved by JoJo. */
+.poster-fill .pic img.contest-kv-top{object-position:50% 15%}
+.poster-fill .pic img.poster-linglan-full{object-fit:contain;object-position:center;background:#151119}
+.pic img.global36-people{width:112%;height:112%;left:-6%;top:-6%;object-fit:cover;object-position:50% 84%}
+.museum-horizontal{display:block;width:100%;height:100%;overflow:hidden}
+
+/* v6: tighter landscape framing from the original high-resolution photograph. */
+.kemeng-main .kemeng-hires{object-position:50% 50%}
+.kemeng-main figcaption{top:14px;left:18px;right:auto;bottom:auto;padding:8px 14px;background:rgba(24,28,24,.62)}
+
+/* v7: opening artwork and larger lower photographs with unobstructed captions. */
+.opening-intro{display:grid;grid-template-columns:1.15fr 1fr;gap:72px;align-items:center}
+.opening-copy{min-width:0}
+.opening-art{height:560px;background:#211a0c}
+.opening-art img{object-fit:contain;object-position:center}
+.kemeng-secondary{display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--canvas)}
+.kemeng-secondary img{position:static;inset:auto;flex:none;width:100%;height:auto;aspect-ratio:3/2;object-fit:contain}
+.kemeng-secondary figcaption{position:static;align-self:flex-start;flex:none;padding:6px 14px}
+
+/* v8: equal-height, natural-aspect Beijing images and a full-frame film cover. */
+.beijing-evidence{min-width:0;display:flex;flex-direction:column;align-self:center}
+.beijing-evidence img{position:static;inset:auto;display:block;width:100%;height:auto;object-fit:contain}
+.beijing-evidence figcaption{position:static;flex:none}
+.pic.film-cover img{object-fit:cover;object-position:50% 50%}
+.sci-gap{display:flex;flex-direction:column;justify-content:center;padding:32px;background:var(--sunken);border:1px solid var(--line);font-size:28px;line-height:1.5;color:var(--muted)}.sci-gap small{font-size:20px;margin-top:18px}
+.brand-pair{display:flex;align-items:center;gap:24px;flex:none}
+.brand-pair .brand-divider{height:38px;width:1px;background:#c7cbd1;margin:0 4px}
+.brand-pair .kormo-logo{height:64px;width:auto;object-fit:contain;filter:contrast(1.15);mix-blend-mode:multiply}
+[data-slide-id="aj-review-02"] .opening-art{background:#07070b}
+[data-slide-id="aj-review-02"] .opening-art img{object-fit:cover;object-position:50% 54%;transform:scale(1.08)}
+</style>
+
+<meta name="description" content="WaytoAGI × 成都科梦共创推介：连接作者、AI 创作者与产业伙伴，让科幻好故事遇见全球创造力。17 页互动演示。">
+<meta name="robots" content="noindex, noarchive">
+<meta property="og:type" content="website">
+<meta property="og:title" content="让科幻好故事，遇见全球创造力 · AJ">
+<meta property="og:description" content="WaytoAGI × 成都科梦共创推介 · 17 页可翻页演示">
+<meta property="og:url" content="https://aj-kemeng-scifi-20261112.forgivingstarling2.chatgpt.site/">
+<meta property="og:image" content="https://aj-kemeng-scifi-20261112.forgivingstarling2.chatgpt.site/assets/5e8749ce1fc4f4e6236e.jpg">
+<meta name="theme-color" content="#151515">
+<style>
+#viewport{bottom:72px}
+#viewer-controls{position:fixed;z-index:40;bottom:13px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:5px 8px;border:1px solid #444;border-radius:10px;background:#171717;color:#fff;font:14px var(--font-sans);max-width:calc(100vw - 20px)}
+#viewer-controls button,#page-picker{font:inherit;color:#fff;background:#262626;border:1px solid #555;border-radius:6px;min-height:36px;padding:6px 12px;cursor:pointer}
+#viewer-controls button:disabled{opacity:.35;cursor:default}
+#page-picker{width:228px;max-width:40vw;text-overflow:ellipsis}
+#page-count{font-variant-numeric:tabular-nums;white-space:nowrap;min-width:48px;text-align:center}
+#viewer-controls button:hover:not(:disabled){background:#3a3a3a}
+#viewer-controls :focus-visible{outline:2px solid #d4ff70;outline-offset:2px}
+#hint{bottom:72px;right:12px;font-size:11px;color:#999}
+.mobile-hint{display:none}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:700px){#viewer-controls{gap:5px;padding:5px}#viewer-controls button{padding:6px 9px;min-height:40px}#page-picker{width:150px;padding:6px;min-height:40px}#page-count{font-size:12px;min-width:42px}.mobile-hint{display:inline}#hint{font-size:10px}}
+@media print{#viewer-controls,#hint{display:none!important}}
+</style></head>
+<body>
+<div id="viewport"><div id="stage">
+<section data-slide-id="aj-review-01" class="slide" data-sec="成都科幻周 · 天问成果发布会" data-sec-en="Chengdu Sci-Fi Week 2026" data-theme="环节 11 · 应用场景推介">
+  <div class="body" style="justify-content:center">
+    <div class="in mono muted" style="font-size:20px">2026 成都科幻周开幕式 · 科梦科幻 OPC 社区共创场景推介</div>
+    <h1 class="hero in d1" style="margin-top:44px">让科幻好故事，<br>遇见<mark>全球创造力</mark></h1>
+    <div class="en in d2" style="font-size:42px;color:var(--ink);margin-top:26px">When Great Sci-Fi Stories Meet Global Creativity</div>
+    <div class="in d3" style="margin-top:70px;font-size:30px;color:var(--muted)"><b style="color:var(--ink);font-family:var(--font-display);font-size:40px;margin-right:24px">AJ</b>WaytoAGI 创始人 · 成都科梦科幻 OPC 社区共创发起人</div>
+  </div>
+  <div class="steps in d2" aria-hidden="true" style="position:absolute;right:126px;bottom:92px">
+    <i style="--w:150px;height:150px;background:var(--brand-lilac)"></i><i style="--w:150px;height:260px;background:var(--brand-cyan)"></i><i style="--w:150px;height:370px;background:var(--brand-violet)"></i><i style="--w:150px;height:480px;background:var(--brand-green)"></i><i style="--w:150px;height:600px;background:var(--brand-lime)"></i>
+  </div>
+</section>
+
+<section data-slide-id="aj-review-02" class="slide" data-sec="开场" data-sec-en="Opening" data-theme="很多好作品，值得被更多人看见">
+  <div class="body">
+<div class="opening-intro"><div class="opening-copy">    <div class="in" style="font-size:32px;color:var(--muted)">让作者、创作者与产业伙伴<b style="color:var(--ink)">在这里相遇</b></div>
+    <h1 class="in d1" style="font-size:112px;margin-top:36px">很多好故事，<br>一直<mark>很难被看见</mark></h1>
+    <div class="en in d1">Great sci-fi stories deserve to be seen.</div>
+</div><figure class="pic opening-art in d2"><img decoding="async" src="assets/yuri-stage-20261113.jpg" alt="尤栗 Yuri 演出现场，人物与舞台主体取景"><figcaption>尤栗 Yuri · 演出现场</figcaption></figure></div>
+    <div class="row in d2" style="margin-top:48px;align-items:stretch;gap:0">
+      <div class="card" style="flex:1;background:transparent;border:1px solid var(--line)"><div class="tag" style="margin:0">Before</div><h3 style="margin-top:10px">过去：影像、游戏、体验开发</h3><p style="color:var(--ink);margin-top:10px">成本高 · 周期长 · 只有极少数作品有机会</p></div>
+      <div class="arrow" style="padding:0 36px">→</div>
+      <div class="card" style="flex:1"><div class="tag" style="margin:0">Now · Start with a prototype</div><h3 style="margin-top:10px">现在：先用 AI 探索角色和场景</h3><p style="color:var(--ink);margin-top:10px">先做小样 · 围绕画面讨论 · 再决定下一步</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide talk" data-sec="PART 01 · 为什么是现在" data-sec-en="Part 01" data-theme="过去是人学软件，现在是 AI 学软件">
+  <div class="body" style="justify-content:space-between;padding:70px 0 56px">
+    <div class="in" style="display:flex;gap:40px;width:62%"><div style="flex:1;border-top:6px solid var(--brand-violet);padding-top:18px"><div class="mono" style="font-size:18px;color:var(--ink)">PART 01</div><div style="font-size:30px;font-weight:700;margin-top:8px;color:var(--ink)">为什么是现在</div></div><div style="flex:1;border-top:6px solid var(--line);padding-top:18px"><div class="mono" style="font-size:18px;color:var(--muted)">PART 02</div><div style="font-size:30px;font-weight:500;margin-top:8px;color:var(--muted)">谁在做</div></div><div style="flex:1;border-top:6px solid var(--line);padding-top:18px"><div class="mono" style="font-size:18px;color:var(--muted)">PART 03</div><div style="font-size:30px;font-weight:500;margin-top:8px;color:var(--muted)">一起做科幻</div></div></div>
+    <div>
+      <h1 class="in d1" style="font-size:140px;line-height:1.28">过去是人学软件，<br><mark style="background:var(--brand-violet)">现在是 AI 学软件</mark></h1>
+      <div class="en in d2" style="font-size:36px;margin-top:40px;color:var(--ink)">We used to learn the software. Now AI does.</div>
+    </div>
+  </div>
+</section>
+
+<section class="slide talk" data-sec="为什么是现在 · 三年" data-sec-en="Three Years" data-theme="这一切，只用了写完一部长篇小说的时间">
+  <div class="body">
+    <h1 class="in" style="font-size:80px">三年前，AI 还<mark>画不好一只手</mark></h1>
+    <div class="en in d1">Three years ago, AI couldn't draw a hand. Today, one person can make a film.</div>
+    <div class="in d2" style="margin-top:40px;display:grid;grid-template-columns:repeat(5,1fr);align-items:end"><div><div style="padding:0 14px 16px 0px"><figure class="pic" style="height:250px;margin:0 0 18px;position:relative;background:#111"><video data-slide-preview muted loop playsinline preload="auto" poster="assets/yr-2022.jpg" src="assets/yr-2022.mp4" style="width:100%;height:100%;object-fit:cover;display:block"></video><div class="mono" style="position:absolute;left:12px;top:12px;background:rgba(21,21,21,.82);color:#fff;font-size:14px;padding:4px 10px;letter-spacing:.04em">DALL·E 2 · OpenAI</div></figure><div class="num" style="font-size:48px;line-height:1">2022</div><div style="font-size:26px;font-weight:600;margin-top:10px">能画一张图</div><div style="font-size:20px;color:var(--muted);margin-top:4px">手指常常画成六根</div></div><i aria-hidden="true" style="display:block;height:30px;background:var(--brand-lilac)"></i></div><div><div style="padding:0 14px 16px 14px"><figure class="pic" style="height:250px;margin:0 0 18px;position:relative;background:#111"><video data-slide-preview muted loop playsinline preload="auto" poster="assets/yr-2023.jpg" src="assets/yr-2023.mp4" style="width:100%;height:100%;object-fit:cover;display:block"></video><div class="mono" style="position:absolute;left:12px;top:12px;background:rgba(21,21,21,.82);color:#fff;font-size:14px;padding:4px 10px;letter-spacing:.04em">早期 AI 视频 · 2023</div></figure><div class="num" style="font-size:48px;line-height:1">2023</div><div style="font-size:26px;font-weight:600;margin-top:10px">画面能动几秒</div><div style="font-size:20px;color:var(--muted);margin-top:4px">人物一动就变形</div></div><i aria-hidden="true" style="display:block;height:70px;background:var(--brand-cyan)"></i></div><div><div style="padding:0 14px 16px 14px"><figure class="pic" style="height:250px;margin:0 0 18px;position:relative;background:#111"><video data-slide-preview muted loop playsinline preload="auto" poster="assets/yr-2024.jpg" src="assets/yr-2024.mp4" style="width:100%;height:100%;object-fit:cover;display:block"></video><div class="mono" style="position:absolute;left:12px;top:12px;background:rgba(21,21,21,.82);color:#fff;font-size:14px;padding:4px 10px;letter-spacing:.04em">Sora · OpenAI</div></figure><div class="num" style="font-size:48px;line-height:1">2024</div><div style="font-size:26px;font-weight:600;margin-top:10px">一分钟连贯镜头</div><div style="font-size:20px;color:var(--muted);margin-top:4px">角色前后一致</div></div><i aria-hidden="true" style="display:block;height:110px;background:var(--brand-violet)"></i></div><div><div style="padding:0 14px 16px 14px"><figure class="pic" style="height:250px;margin:0 0 18px;position:relative;background:#111"><video data-slide-preview muted loop playsinline preload="auto" poster="assets/yr-2025.jpg" src="assets/yr-2025.mp4" style="width:100%;height:100%;object-fit:cover;display:block"></video><div class="mono" style="position:absolute;left:12px;top:12px;background:rgba(21,21,21,.82);color:#fff;font-size:14px;padding:4px 10px;letter-spacing:.04em">Veo 3.1 · Google</div></figure><div class="num" style="font-size:48px;line-height:1">2025</div><div style="font-size:26px;font-weight:600;margin-top:10px">自带声音对白</div><div style="font-size:20px;color:var(--muted);margin-top:4px">开始调用工具做事</div></div><i aria-hidden="true" style="display:block;height:150px;background:var(--brand-green)"></i></div><div><div style="padding:0 0px 16px 14px"><figure class="pic" style="height:250px;margin:0 0 18px;position:relative;background:#111"><video data-slide-preview muted loop playsinline preload="auto" poster="assets/yr-2026.jpg" src="assets/yr-2026.mp4" style="width:100%;height:100%;object-fit:cover;display:block"></video><div class="mono" style="position:absolute;left:12px;top:12px;background:rgba(21,21,21,.82);color:#fff;font-size:14px;padding:4px 10px;letter-spacing:.04em">GPT-6 Astra × Blender</div></figure><div class="num" style="font-size:48px;line-height:1">2026</div><div style="font-size:28px;font-weight:700;margin-top:10px">会用人的工具</div><div style="font-size:20px;color:var(--ink);margin-top:4px">进工作流、进生活、进硬件</div></div><i aria-hidden="true" style="display:block;height:190px;background:var(--brand-lime)"></i></div></div>
+  </div>
+</section>
+
+<section class="slide talk" data-sec="为什么是现在 · 入口在变" data-sec-en="From Chat to Personal Agent" data-theme="AI 从回答问题，走到替人做事">
+  <div class="body">
+    <h1 class="in" style="font-size:80px">从回答问题，到<mark>替人做事</mark></h1>
+    <div class="en in d1">From answering questions to getting things done.</div>
+    <div class="in d2" style="margin-top:40px;display:grid;grid-template-columns:repeat(4,1fr);align-items:end"><div><div style="padding:0 22px 18px 0px"><div class="mono muted" style="font-size:16px;margin-bottom:10px">01</div><figure class="pic" style="height:300px;margin:0 0 16px;position:relative;background:#111"><video data-slide-preview muted loop playsinline preload="auto" poster="assets/st-chat.jpg" src="assets/st-chat.mp4" style="width:100%;height:100%;object-fit:cover;display:block"></video><div class="mono" style="position:absolute;left:14px;top:14px;background:rgba(21,21,21,.82);color:#fff;font-size:15px;padding:5px 11px;letter-spacing:.04em">ChatGPT Voice · OpenAI</div></figure><div class="num" style="font-size:44px;line-height:1.1;margin-top:4px">Chat</div><div style="font-size:24px;margin-top:10px;line-height:1.55">先回答问题<br><span class="muted">让知识随时可用</span></div></div><i aria-hidden="true" style="display:block;height:40px;background:var(--brand-cyan)"></i></div><div><div style="padding:0 22px 18px 22px"><div class="mono muted" style="font-size:16px;margin-bottom:10px">02</div><figure class="pic" style="height:300px;margin:0 0 16px;position:relative;background:#111"><video data-slide-preview muted loop playsinline preload="auto" poster="assets/st-claw.jpg" src="assets/st-claw.mp4" style="width:100%;height:100%;object-fit:cover;display:block"></video><div class="mono" style="position:absolute;left:14px;top:14px;background:rgba(21,21,21,.82);color:#fff;font-size:15px;padding:5px 11px;letter-spacing:.04em">OpenClaw · 在聊天软件里干活</div></figure><div class="num" style="font-size:44px;line-height:1.1;margin-top:4px">OpenClaw</div><div style="font-size:24px;margin-top:10px;line-height:1.55">开始调用工具<br><span class="muted">完成更长链路</span></div></div><i aria-hidden="true" style="display:block;height:80px;background:var(--brand-violet)"></i></div><div><div style="padding:0 22px 18px 22px"><div class="mono muted" style="font-size:16px;margin-bottom:10px">03</div><figure class="pic" style="height:300px;margin:0 0 16px;position:relative;background:#111"><video data-slide-preview muted loop playsinline preload="auto" poster="assets/st-cowork.jpg" src="assets/st-cowork.mp4" style="width:100%;height:100%;object-fit:cover;display:block"></video><div class="mono" style="position:absolute;left:14px;top:14px;background:rgba(21,21,21,.82);color:#fff;font-size:15px;padding:5px 11px;letter-spacing:.04em">Claude Cowork · Anthropic</div></figure><div class="num" style="font-size:44px;line-height:1.1;margin-top:4px">Work Agent</div><div style="font-size:24px;margin-top:10px;line-height:1.55">进入工作流<br><span class="muted">协作与执行并行</span></div></div><i aria-hidden="true" style="display:block;height:120px;background:var(--brand-green)"></i></div><div><div style="padding:0 0px 18px 22px"><div class="mono muted" style="font-size:16px;margin-bottom:10px">04</div><figure class="pic" style="height:300px;margin:0 0 16px;position:relative;background:#111"><video data-slide-preview muted loop playsinline preload="auto" poster="assets/st-dots.jpg" src="assets/st-dots.mp4" style="width:100%;height:100%;object-fit:cover;display:block"></video><div class="mono" style="position:absolute;left:14px;top:14px;background:rgba(21,21,21,.82);color:#fff;font-size:15px;padding:5px 11px;letter-spacing:.04em">dots · OpenAI</div></figure><div class="num" style="font-size:44px;line-height:1.1;margin-top:4px">Personal Agent</div><div style="font-size:24px;margin-top:10px;line-height:1.55">每个人都配了云电脑<br><span class="muted">走进个人生活 · 开始连接硬件</span></div></div><i aria-hidden="true" style="display:block;height:160px;background:var(--brand-lime)"></i></div></div>
+  </div>
+</section>
+
+<section class="slide talk" data-sec="为什么是现在 · 画面" data-sec-en="Three Ways to Make Images" data-theme="画面，不止一种生成方式">
+  <div class="body">
+    <h1 class="in" style="font-size:80px">做画面，现在有<mark>三条路</mark></h1>
+    <div class="en in d1">Images and video no longer come only from image and video models.</div>
+    <div class="in d2" style="margin-top:46px;display:grid;grid-template-columns:repeat(3,1fr);gap:24px"><div class="card tl" style="--c:var(--brand-cyan);padding:40px 42px"><figure class="pic" style="height:340px;margin:-40px -42px 24px;position:relative;background:#111"><video data-slide-preview muted loop playsinline preload="auto" poster="assets/p6-seedance.jpg" src="assets/p6-seedance.mp4" style="width:100%;height:100%;object-fit:cover;display:block"></video><div class="mono" style="position:absolute;left:14px;top:14px;background:rgba(21,21,21,.82);color:#fff;font-size:15px;padding:5px 11px;letter-spacing:.04em">Seedance 2.5 · AI 短片 · 2026.11</div></figure><div class="mono muted" style="font-size:16px">01 · Generate</div><h3 style="font-size:42px;margin-top:12px">直接生成</h3><p style="font-size:24px;color:var(--ink)">视频模型一句话出片，画面、声音、对白一起出来</p></div><div class="card tl" style="--c:var(--brand-violet);padding:40px 42px"><figure class="pic" style="height:340px;margin:-40px -42px 24px;position:relative;background:#111"><video data-slide-preview muted loop playsinline preload="auto" poster="assets/p6-code.jpg" src="assets/p6-code.mp4" style="width:100%;height:100%;object-fit:cover;display:block"></video><div class="mono" style="position:absolute;left:14px;top:14px;background:rgba(21,21,21,.82);color:#fff;font-size:15px;padding:5px 11px;letter-spacing:.04em">Claude Opus 5.5 · @devteamdrew · 2026.9</div></figure><div class="mono muted" style="font-size:16px">02 · Code</div><h3 style="font-size:42px;margin-top:12px">写代码来画</h3><p style="font-size:24px;color:var(--ink)">大模型写程序画图、做动画、做视频，没有用视频模型，每一帧都是代码</p></div><div class="card lime" style="padding:40px 42px"><figure class="pic" style="height:340px;margin:-40px -42px 24px;position:relative;background:#111"><video data-slide-preview muted loop playsinline preload="auto" poster="assets/p6-dragon.jpg" src="assets/p6-dragon.mp4" style="width:100%;height:100%;object-fit:cover;display:block"></video><div class="mono" style="position:absolute;left:14px;top:14px;background:rgba(21,21,21,.82);color:#fff;font-size:15px;padding:5px 11px;letter-spacing:.04em">GPT-6 Astra × Blender · @doomdave · 2026.9</div></figure><div class="mono" style="font-size:16px">03 · Use the tools</div><h3 style="font-size:42px;margin-top:12px">直接用专业工具</h3><p style="font-size:24px;color:var(--ink)">一张参考图，模型在 Blender 里建出巨龙、自己运镜出片；Adobe 也在把全家桶开放给外部 AI</p></div></div>
+  </div>
+</section>
+
+<section class="slide talk" data-sec="为什么是现在 · 真实例子" data-sec-en="Latest Examples" data-theme="都是最近三个月里发生的事">
+  <div class="body">
+    <h1 class="in" style="font-size:80px">看几个<mark>最新的真实例子</mark></h1>
+    <div class="en in d1">From an old drawing to a 3D train, from one sentence to a finished cut — all from the past three months.</div>
+    <div class="in d2" style="margin-top:46px;display:grid;grid-template-columns:repeat(4,1fr);gap:24px"><div class="card tl" style="--c:var(--brand-cyan);padding:0;display:flex;flex-direction:column;overflow:hidden">
+  <div style="position:relative;height:370px;background:#111"><video data-slide-preview muted loop playsinline preload="auto" poster="assets/ex-train.jpg" src="assets/ex-train.mp4" style="width:100%;height:100%;object-fit:cover;display:block"></video>
+  <div class="mono" style="position:absolute;left:16px;top:16px;background:rgba(21,21,21,.82);color:#fff;font-size:16px;padding:6px 12px;letter-spacing:.04em">@tomkrcha · 2026.9</div></div>
+  <div style="padding:30px 34px 34px"><div class="mono muted" style="font-size:17px">GPT-6 Astra × Blender</div><h3 style="font-size:38px;margin-top:12px">一张旧手稿，变成 3D 火车</h3><p style="font-size:23px;line-height:1.55;margin-top:12px">把一张蒸汽火车的老图纸交给模型，几分钟在 Blender 里建出 3,295 个可编辑零件</p></div>
+</div><div class="card tl" style="--c:var(--brand-green);padding:0;display:flex;flex-direction:column;overflow:hidden">
+  <div style="position:relative;height:370px;background:#111"><video data-slide-preview muted loop playsinline preload="auto" poster="assets/ex-house.jpg" src="assets/ex-house.mp4" style="width:100%;height:100%;object-fit:cover;display:block"></video>
+  <div class="mono" style="position:absolute;left:16px;top:16px;background:rgba(21,21,21,.82);color:#fff;font-size:16px;padding:6px 12px;letter-spacing:.04em">OpenAI 演示 · 2026.9</div></div>
+  <div style="padding:30px 34px 34px"><div class="mono muted" style="font-size:17px">GPT-6 Astra × Blender × UE5</div><h3 style="font-size:38px;margin-top:12px">房子没盖，先走进去</h3><p style="font-size:23px;line-height:1.55;margin-top:12px">模型先在 Blender 建好房子，再变成可以漫游的三维场景</p></div>
+</div><div class="card tl" style="--c:var(--brand-violet);padding:0;display:flex;flex-direction:column;overflow:hidden">
+  <div style="position:relative;height:370px;background:#111"><video data-slide-preview muted loop playsinline preload="auto" poster="assets/ex-melon.jpg" src="assets/ex-melon.mp4" style="width:100%;height:100%;object-fit:cover;display:block"></video>
+  <div class="mono" style="position:absolute;left:16px;top:16px;background:rgba(21,21,21,.82);color:#fff;font-size:16px;padding:6px 12px;letter-spacing:.04em">@claudeai · 2026.9</div></div>
+  <div style="padding:30px 34px 34px"><div class="mono muted" style="font-size:17px">Claude Opus 5.5 × 代码</div><h3 style="font-size:38px;margin-top:12px">每一帧，都是代码画的</h3><p style="font-size:23px;line-height:1.55;margin-top:12px">没有用视频模型，角色、动画和镜头，全部由模型写代码画出来</p></div>
+</div><div class="card tl" style="--c:var(--brand-lime);padding:0;display:flex;flex-direction:column;overflow:hidden">
+  <div style="position:relative;height:370px;background:#111"><video data-slide-preview muted loop playsinline preload="auto" poster="assets/ex-tella.jpg" src="assets/ex-tella.mp4" style="width:100%;height:100%;object-fit:cover;display:block"></video>
+  <div class="mono" style="position:absolute;left:16px;top:16px;background:rgba(21,21,21,.82);color:#fff;font-size:16px;padding:6px 12px;letter-spacing:.04em">@9ranty · 2026.10</div></div>
+  <div style="padding:30px 34px 34px"><div class="mono muted" style="font-size:17px">Tella Agent</div><h3 style="font-size:38px;margin-top:12px">一句话，剪成成片</h3><p style="font-size:23px;line-height:1.55;margin-top:12px">说一句「剪成节奏紧凑的 YouTube 片」，agent 自己剪掉口癖、配 B-roll、发布</p></div>
+</div></div>
+  </div>
+</section>
+
+<section class="slide talk" data-sec="为什么是现在 · 一页带走" data-sec-en="Take-Away Sheet" data-theme="这些做法，今天就能用起来" >
+  <div class="body" style="padding-top:44px">
+    <h1 class="in" style="font-size:70px">一页带走：现在就能<mark>用起来的做法</mark></h1>
+    <div class="en in d1" style="font-size:24px">Eight things people already do with AI, every day.</div>
+    <div class="in d2" style="margin-top:34px;display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:1fr;gap:18px;flex:1"><div class="card tl" style="--c:var(--brand-lime);padding:30px 32px;display:flex;flex-direction:column"><div class="mono muted" style="font-size:17px">01</div><h3 style="font-size:36px;margin-top:10px">做演示</h3><p style="font-size:21px;line-height:1.55;margin-top:10px;flex:1">不开 PPT，让 AI 写网页演示，能放视频，改完就能发</p><div class="mono" style="font-size:16px;margin-top:12px;color:var(--ink)">HTML deck</div></div><div class="card tl" style="--c:var(--brand-cyan);padding:30px 32px;display:flex;flex-direction:column"><div class="mono muted" style="font-size:17px">02</div><h3 style="font-size:36px;margin-top:10px">做视频</h3><p style="font-size:21px;line-height:1.55;margin-top:10px;flex:1">把想要的画面写清楚，让模型写动画代码，再渲染成片</p><div class="mono" style="font-size:16px;margin-top:12px;color:var(--ink)">Remotion · Claude Code</div></div><div class="card tl" style="--c:var(--brand-violet);padding:30px 32px;display:flex;flex-direction:column"><div class="mono muted" style="font-size:17px">03</div><h3 style="font-size:36px;margin-top:10px">剪辑</h3><p style="font-size:21px;line-height:1.55;margin-top:10px;flex:1">把口播素材交给剪辑 agent，一句话说清节奏，它去剪、去口癖、加动效</p><div class="mono" style="font-size:16px;margin-top:12px;color:var(--ink)">Tella · Premiere</div></div><div class="card tl" style="--c:var(--brand-green);padding:30px 32px;display:flex;flex-direction:column"><div class="mono muted" style="font-size:17px">04</div><h3 style="font-size:36px;margin-top:10px">做 3D</h3><p style="font-size:21px;line-height:1.55;margin-top:10px;flex:1">让模型直接操作三维软件，说几句话就搭出完整场景</p><div class="mono" style="font-size:16px;margin-top:12px;color:var(--ink)">Blender MCP</div></div><div class="card tl" style="--c:var(--brand-lilac);padding:30px 32px;display:flex;flex-direction:column"><div class="mono muted" style="font-size:17px">05</div><h3 style="font-size:36px;margin-top:10px">定风格</h3><p style="font-size:21px;line-height:1.55;margin-top:10px;flex:1">把设计品味写成 design.md，AI 照着它做出同一种风格</p><div class="mono" style="font-size:16px;margin-top:12px;color:var(--ink)">design.md</div></div><div class="card tl" style="--c:var(--brand-lime);padding:30px 32px;display:flex;flex-direction:column"><div class="mono muted" style="font-size:17px">06</div><h3 style="font-size:36px;margin-top:10px">沉淀流程</h3><p style="font-size:21px;line-height:1.55;margin-top:10px;flex:1">同一件事做过 3 遍，就写成 Skill，以后交给 AI 自己跑</p><div class="mono" style="font-size:16px;margin-top:12px;color:var(--ink)">Skill · 工作流</div></div><div class="card tl" style="--c:var(--brand-cyan);padding:30px 32px;display:flex;flex-direction:column"><div class="mono muted" style="font-size:17px">07</div><h3 style="font-size:36px;margin-top:10px">找工具</h3><p style="font-size:21px;line-height:1.55;margin-top:10px;flex:1">先去 GitHub 找开源项目，交给 agent 装好、改好、跑起来</p><div class="mono" style="font-size:16px;margin-top:12px;color:var(--ink)">GitHub · CLI</div></div><div class="card tl" style="--c:var(--brand-violet);padding:30px 32px;display:flex;flex-direction:column"><div class="mono muted" style="font-size:17px">08</div><h3 style="font-size:36px;margin-top:10px">组队</h3><p style="font-size:21px;line-height:1.55;margin-top:10px;flex:1">一个人 + agent 军团 + 社区伙伴，再连接更多生态</p><div class="mono" style="font-size:16px;margin-top:12px;color:var(--ink)">OPC 一人公司</div></div></div>
+    <div class="in d3" style="margin-top:20px;display:flex;gap:18px;font-size:24px;font-weight:600">
+      <div style="flex:1;background:var(--ink);color:#fff;padding:20px 28px">能写成文档的，写给 AI 看</div>
+      <div style="flex:1;background:var(--ink);color:#fff;padding:20px 28px">能用一行命令的，不点按钮</div>
+      <div style="flex:1;background:var(--brand-lime);padding:20px 28px">做过 3 遍的，变成 Skill</div>
+    </div>
+  </div>
+</section>
+
+<section class="slide talk" data-sec="PART 02 · 谁在做" data-sec-en="Part 02" data-theme="大公司在变小，个人在变大">
+  <div class="body" style="justify-content:space-between;padding:70px 0 56px">
+    <div class="in" style="display:flex;gap:40px;width:62%"><div style="flex:1;border-top:6px solid var(--line);padding-top:18px"><div class="mono" style="font-size:18px;color:var(--muted)">PART 01</div><div style="font-size:30px;font-weight:500;margin-top:8px;color:var(--muted)">为什么是现在</div></div><div style="flex:1;border-top:6px solid var(--brand-cyan);padding-top:18px"><div class="mono" style="font-size:18px;color:var(--ink)">PART 02</div><div style="font-size:30px;font-weight:700;margin-top:8px;color:var(--ink)">谁在做</div></div><div style="flex:1;border-top:6px solid var(--line);padding-top:18px"><div class="mono" style="font-size:18px;color:var(--muted)">PART 03</div><div style="font-size:30px;font-weight:500;margin-top:8px;color:var(--muted)">一起做科幻</div></div></div>
+    <div>
+      <h1 class="in d1" style="font-size:140px;line-height:1.28">大公司在变小，<br><mark style="background:var(--brand-cyan)">个人在变大</mark></h1>
+      <div class="en in d2" style="font-size:36px;margin-top:40px;color:var(--ink)">Companies are getting smaller. Individuals are getting bigger.</div>
+    </div>
+  </div>
+</section>
+
+<section data-slide-id="aj-review-03" class="slide" data-sec="我们是谁 · WaytoAGI" data-sec-en="Who We Are" data-theme="从一份文档，到一个全球共创网络">
+<div class="body">
+  <h1 class="in">一份文档，长成<mark>全球共创社区</mark></h1>
+  <div class="en in d1">From one shared document to a global creative community.</div>
+  <div class="in d2" style="margin-top:28px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px;height:480px;flex:none">
+    <figure class="pic" style="height:480px;background:var(--canvas)"><img decoding="async" src="assets/5e8749ce1fc4f4e6236e.jpg" alt="WaytoAGI 社区成员户外大合影" style="object-fit:contain"><figcaption>共同学习者，与共同创造者相见</figcaption></figure>
+    <div class="card" style="padding:32px 34px;display:flex;flex-direction:column;justify-content:center;min-width:0">
+      <div style="display:grid;grid-template-columns:1.15fr 1fr;gap:36px;padding-bottom:28px;border-bottom:1px solid var(--line)">
+        <div class="stat"><div class="num" style="font-size:108px">1000<small>万+</small></div><div class="l">全球 AI 学习者</div></div>
+        <div class="stat"><div class="num" style="font-size:108px">1<small>亿次+</small></div><div class="l">知识库访问</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:18px;padding-top:30px;--n:58px">
+        <div class="stat"><div class="num">600<small>+</small></div><div class="l" style="font-size:20px">主题活动</div></div>
+        <div class="stat"><div class="num">120<small>+</small></div><div class="l" style="font-size:20px">合作品牌</div></div>
+        <div class="stat"><div class="num">180</div><div class="l" style="font-size:20px">高校连接</div></div>
+        <div class="stat"><div class="num">52</div><div class="l" style="font-size:20px">城市</div></div>
+        <div class="stat"><div class="num">8</div><div class="l" style="font-size:20px">国家</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="in d3" style="margin-top:24px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px">
+    <div style="border-top:4px solid var(--brand-lilac);padding-top:12px"><div class="yr" style="font-size:36px">2023</div><div style="font-size:24px;font-weight:600;margin-top:8px">开放知识</div><div style="font-size:20px;color:var(--muted);margin-top:6px">一份公开文档 · 日更共建知识库</div></div>
+    <div style="border-top:4px solid var(--brand-cyan);padding-top:12px"><div class="yr" style="font-size:36px">2024</div><div style="font-size:24px;font-weight:600;margin-top:8px">共创成形</div><div style="font-size:20px;color:var(--muted);margin-top:6px">AI 春晚 · 离谱村 · AI 切磋大会</div></div>
+    <div style="border-top:4px solid var(--brand-violet);padding-top:12px"><div class="yr" style="font-size:36px">2025</div><div style="font-size:24px;font-weight:600;margin-top:8px">网络拓展</div><div style="font-size:20px;color:var(--muted);margin-top:6px">校园路演 · 全球 36 城黑客松</div></div>
+    <div style="border-top:4px solid var(--brand-green);padding-top:12px"><div class="yr" style="font-size:36px">2026</div><div style="font-size:24px;font-weight:600;margin-top:8px">产业共建</div><div style="font-size:20px;color:var(--muted);margin-top:6px">52 城分站 · 北京 / 成都 · 科梦 OPC</div></div>
+  </div>
+</div></section>
+
+<section data-slide-id="aj-review-04" class="slide" data-sec="我们是谁 · 科梦" data-sec-en="Kemeng, Chengdu" data-theme="线上一张网，线下一个基地">
+  <div class="body" style="flex-direction:row;align-items:stretch;gap:56px;padding:0">
+    <div class="in" style="flex:.95;display:flex;flex-direction:column;justify-content:center">
+      <h1>线上共创网络，<br>线下<mark>成都科梦</mark></h1>
+      <div class="en">An online creative community. A shared space in Chengdu.</div>
+      <div style="margin-top:40px;font-size:28px;line-height:1.85">
+        <div><b>围绕 AIGC、数字 IP 与 Agent 的共创空间</b></div>
+        <div class="muted">红星传媒 × WaytoAGI 共建 · 成都传媒·白鹭湾科创园 · 首期 2500㎡</div>
+        <div class="muted">共学 · 切磋 · 路演 · 黑客松，连接应用场景与产业需求</div>
+      </div>
+      <div class="card tl" style="margin-top:36px;padding:28px 34px;--c:var(--brand-green)"><div class="tag" style="margin:0">Community in action</div><div style="font-size:28px;margin-top:10px;font-weight:600">带着想法来，找到一起做的人</div><div style="font-size:24px;line-height:1.7;color:var(--muted);margin-top:6px">在共学中认识伙伴，在实践中推进想法<br>以切磋、路演和作品展示持续交流</div></div>
+    </div>
+    <div class="in d2" style="flex:1.5;min-width:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:minmax(0,1fr) 484px;gap:16px">
+      <figure class="pic kemeng-main" style="grid-column:1/3"><img decoding="async" class="kemeng-hires" src="assets/69917876d9304cf78589.jpg" alt="科梦 OPC 内部"><figcaption>科梦 OPC · 成都</figcaption></figure>
+      <figure class="pic kemeng-secondary"><img decoding="async" src="assets/23d2ec532f04f833d675.jpg" alt="科梦外景"><figcaption>白鹭湾科创园</figcaption></figure>
+      <figure class="pic kemeng-secondary"><img decoding="async" src="assets/69867874f8ea312d36b0.jpg" alt="STEPX 现场"><figcaption>STEPX 共创现场</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section class="slide talk" data-sec="我们是谁 · 一人公司" data-sec-en="One-Person Company" data-theme="从给大公司打工，到做自己擅长的事" >
+  <div class="body" style="flex-direction:row;align-items:center;gap:72px">
+    <div class="in" style="flex:1">
+      <div class="mono muted" style="font-size:18px">OPC · One-Person Company</div>
+      <h1 style="font-size:84px;margin-top:20px">一个人，<br>就是<mark>一个军团</mark></h1>
+      <div class="en" style="font-size:28px">One person, an army of agents, and a community of partners.</div>
+      <div style="margin-top:44px;font-size:28px;line-height:2">
+        <div><b>大公司</b>　<span class="muted">慢慢小公司化</span></div>
+        <div><b>OPC</b>　<span class="muted">一人公司，逐渐成立</span></div>
+        <div><b>每个人</b>　<span class="muted">从给大公司打工，到做自己擅长的事</span></div>
+      </div>
+      <div style="margin-top:26px;font-size:23px;color:var(--muted)">科梦，就是一个 OPC 社区</div>
+    </div>
+    <div class="in d2" aria-label="一个人带着 agent 军团和社区伙伴军团" style="flex:1;display:flex;justify-content:center">
+      <div style="position:relative;width:720px;height:720px">
+        <div style="position:absolute;inset:0;border-radius:50%;background:var(--brand-lilac)"></div>
+        <div style="position:absolute;inset:120px;border-radius:50%;background:var(--brand-cyan)"></div>
+        <div style="position:absolute;inset:240px;border-radius:50%;background:var(--ink);display:flex;align-items:center;justify-content:center;color:#fff;font-size:52px;font-weight:700">一个人</div>
+        <div style="position:absolute;left:0;right:0;top:150px;text-align:center;font-size:30px;font-weight:700">agent 军团</div>
+        <div style="position:absolute;left:0;right:0;top:40px;text-align:center;font-size:30px;font-weight:700">社区伙伴军团</div>
+        <div style="position:absolute;left:0;right:0;bottom:44px;text-align:center;font-size:24px;color:var(--ink)">更多生态合作</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-slide-id="aj-review-05" class="slide" data-sec="共创如何开始" data-sec-en="Learning into Practice" data-theme="先连接创作者，再围绕一个小样展开协作">
+<div class="body"><h1 class="in">让好故事，找到<mark>一起动手的人</mark></h1>
+<div class="en in d1">From shared learning to a first creative prototype.</div>
+<div class="in d2" style="margin-top:34px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,.85fr);gap:24px">
+ <div class="card tl" style="padding:0;height:360px;display:flex;align-items:stretch;--c:var(--brand-cyan)">
+  <figure class="pic" style="width:56%;flex:none;background:#ede8ff"><img decoding="async" src="assets/d05af55a72f6b5ab19f0.jpg" alt="WaytoAGI AI 短剧实战训练营第三期海报" style="object-fit:contain"></figure>
+  <div style="padding:28px 24px;min-width:0;display:flex;flex-direction:column;justify-content:center"><div class="tag" style="margin:0;font-size:17px">社区已有实践</div><h3 style="font-size:34px;margin-top:16px">AI 短剧<br>训练营</h3><p style="font-size:23px;line-height:1.6;margin-top:18px">活动库收录第 3 期<br>围绕创作主题，组织持续学习与实践</p></div>
+ </div>
+ <div class="card tl" style="padding:0;height:360px;display:flex;align-items:stretch;--c:var(--brand-violet)">
+  <figure class="pic" style="width:56%;flex:none;background:#11192b"><img decoding="async" src="assets/4064ae7cc2b1d7b0330a.jpg" alt="WaytoAGI IP 影视创作训练营第六期海报" style="object-fit:contain"></figure>
+  <div style="padding:28px 24px;min-width:0;display:flex;flex-direction:column;justify-content:center"><div class="tag" style="margin:0;font-size:17px">社区已有实践</div><h3 style="font-size:34px;margin-top:16px">IP 影视创作<br>训练营</h3><p style="font-size:23px;line-height:1.6;margin-top:18px">活动库收录第 6 期<br>连接对 IP 与影视创作感兴趣的参与者</p></div>
+ </div>
+ <div class="card lime" style="height:360px;padding:34px;display:flex;flex-direction:column;justify-content:center"><div class="tag" style="margin:0;color:var(--ink)">持续组织机制</div><h3 style="font-size:36px;margin-top:20px">共学 → 实操 → 作业</h3><p style="font-size:25px;line-height:1.8;color:var(--ink);margin-top:24px">开营、带练、实践、结营<br>配合晚 8 点共学持续交流</p></div>
+</div>
+<div class="in d3" style="margin-top:32px;border-top:1px solid var(--line);padding-top:22px"><div class="mono muted" style="font-size:20px">面向科幻作品的共创路径建议</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px;font-size:36px;font-weight:600"><span>文字设定</span><span class="muted">→</span><span>角色 · 场景</span><span class="muted">→</span><span>分镜 · 预演</span><span class="muted">→</span><span>第一版小样</span></div></div>
+<div class="source-foot in d3" style="font-size:20px;margin-top:20px">训练营名称与共学机制来自社区活动库；下方为本次合作建议，非同一项目的已完成制作流程。</div></div></section>
+
+<section data-slide-id="aj-review-06" class="slide" data-sec="案例 · 社区共创 IP" data-sec-en="Case · Co-created IP" data-theme="一个原创 IP，长出很多人的表达">
+  <div class="body" style="flex-direction:row;align-items:stretch;gap:56px;padding:56px 0">
+    <div class="in" style="flex:.9;display:flex;flex-direction:column;justify-content:center">
+      <div class="mono muted" style="font-size:18px">Case 01 · Tale of Lipu Village</div>
+      <h1 style="margin-top:18px">离谱村：社区<br>共创的<mark>原创 IP</mark></h1>
+      <div class="en">A community-created original IP — from characters to a live concert.</div>
+      <div style="margin-top:36px;font-size:27px;line-height:1.7;color:var(--muted)">角色、故事、影像、音乐，由社区一起创造，持续生长</div>
+      <div style="margin-top:22px">
+        <span class="chip">角色征集</span><span class="chip">共同叙事</span><span class="chip">AI 影像</span><span class="chip">村歌 · 灯会</span><span class="chip">黑客松</span><span class="chip">音乐会</span>
+      </div>
+      <div class="card lime" style="margin-top:28px;padding:26px 32px"><div class="tag" style="margin:0;color:var(--ink)">Global recognition · 2024</div><div style="font-size:30px;font-weight:700;margin-top:8px">MIT AI for Filmmaking 黑客松 · Best Video</div></div>
+    </div>
+    <div class="in d2" style="flex:1.3;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:18px">
+      <figure class="pic" style="display:flex;flex-direction:column;flex:none;background:var(--canvas)"><img decoding="async" src="assets/884a8d4ff2aae4daa1a3.jpg" alt="离谱村角色、场景与奇异生物共同构成的世界观拼图" style="position:static;width:100%;height:auto;object-fit:contain"><figcaption style="position:static;align-self:flex-start;flex:none">离谱村 · 角色、场景与世界观</figcaption></figure>
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;height:284px;flex:none">
+        <figure class="pic contain" style="display:flex;flex-direction:column;background:#fff"><img decoding="async" src="assets/90fc0f26a8763ebffe5f.jpg" alt="MIT 获奖证书" style="position:static;inset:auto;width:100%;height:240px;object-fit:contain;flex:none"><figcaption style="position:static;align-self:flex-start;flex:none">MIT 获奖证书</figcaption></figure>
+        <figure class="pic" style="display:flex;flex-direction:column;background:#151515"><img decoding="async" src="assets/7502731638f53bd9e80b.jpg" alt="离谱音乐会" style="position:static;inset:auto;width:100%;height:240px;object-fit:contain;flex:none"><figcaption style="position:static;align-self:flex-start;flex:none">离谱音乐会现场</figcaption></figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-slide-id="aj-review-07" class="slide" data-sec="案例 · 千人共创" data-sec-en="Case · AI Spring Gala" data-theme="社区共创，可以连接更大的展示舞台">
+  <div class="body">
+    <div class="mono muted in" style="font-size:18px">Case 02 · AI Spring Festival Gala</div>
+    <h1 class="in" style="margin-top:14px">AI 春晚：三年，<mark>千人共创</mark></h1>
+    <div class="en in d1">Three years, from a community experiment to a national stage with CCTV.com.</div>
+    <div class="in d2" style="margin-top:40px;display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
+      <div class="card" style="padding:0"><figure class="gala-horizontal" style="height:330px"><div class="gala-copy"><div class="gala-year">2024</div><div class="gala-title">AI 春晚</div><div class="gala-sub">未来正在上演</div><div class="gala-sub gala-tagline">从零做出一场春晚</div></div><img decoding="async" class="gala-poster" src="assets/30acad94d5e88e57dbe3.jpg" alt="2024 AI 春晚"></figure><div style="padding:24px 30px 28px"><div class="yr">2024</div><div style="font-size:30px;font-weight:600;margin-top:12px">从零做出一场春晚</div><div style="font-size:24px;color:var(--muted);margin-top:6px">300+ 共创者 · 50+ 节目</div></div></div>
+      <div class="card" style="padding:0"><figure class="pic" style="height:330px"><img decoding="async" src="assets/9c388a12fe6a8674b2b8.jpg" alt="2025 AI 春晚"></figure><div style="padding:24px 30px 28px"><div class="yr">2025</div><div style="font-size:30px;font-weight:600;margin-top:12px">创作规模跃升</div><div style="font-size:24px;color:var(--muted);margin-top:6px">近 1000 位共创者 · 49 个节目</div></div></div>
+      <div class="card tl" style="padding:0;--c:var(--brand-red)"><figure class="pic" style="height:330px"><img decoding="async" src="assets/58dce910ec6188911594.jpg" alt="央视网 2026 AI 新春晚会舞台与观众现场" style="object-fit:cover;object-position:center"></figure><div style="padding:24px 30px 28px"><div class="yr">2026</div><div style="font-size:30px;font-weight:600;margin-top:12px">走上国家级媒体平台</div><div style="font-size:24px;color:var(--muted);margin-top:6px">央视网联合出品 · WaytoAGI 作为合作社区参与</div></div></div>
+    </div>
+  </div>
+</section>
+
+<section data-slide-id="aj-review-08" class="slide poster-fill" data-sec="案例 · 以赛聚才" data-sec-en="Case · AI Short Film Contest" data-theme="以赛聚才，让作品与创作者被看见">
+  <div class="body" style="flex-direction:row;align-items:stretch;gap:56px;padding:56px 0">
+    <div class="in" style="flex:.95;display:flex;flex-direction:column;justify-content:center">
+      <div class="mono muted" style="font-size:18px">Case 03 · AI Short Drama Contest</div>
+      <h1 style="margin-top:18px">一场大赛，<br><mark>3000+</mark> 件作品</h1>
+      <div class="en">One contest, 3,000+ AI short films and series.</div>
+      <div style="margin-top:30px;font-size:26px;line-height:1.7;color:var(--muted)">WaytoAGI「爆款开场计划」（AniShort 支持）：官网、工具积分、导师直播、线上组队，北京 · 成都线下交流</div>
+      <div style="margin-top:34px;display:grid;grid-template-columns:repeat(4,auto);gap:36px;justify-content:start">
+        <div class="stat"><div class="num" style="font-size:72px">3000<small>+</small></div><div class="l">报名团队 / 个人</div></div>
+        <div class="stat"><div class="num" style="font-size:72px">20<small>万元</small></div><div class="l">奖金池</div></div>
+        <div class="stat"><div class="num" style="font-size:72px">5</div><div class="l">创作赛道</div></div>
+        <div class="stat"><div class="num" style="font-size:72px">6</div><div class="l">轮每周评选</div></div>
+      </div>
+    </div>
+    <div class="in d2" style="flex:1.2;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);gap:10px">
+      <figure class="pic" style="grid-column:1/3"><img decoding="async" class="contest-kv-top" src="assets/e6e17f5859df07b2c71e.jpg" alt="大赛主视觉"></figure>
+      <figure class="pic"><img decoding="async" src="assets/4eab5ffd38e2bf97da7c.jpg" alt="原稿保留的参赛作品封面，作品署名见审阅来源"></figure><figure class="pic"><img decoding="async" class="poster-linglan-full" src="assets/d187c2f041681df30593.jpg" alt="原稿保留的参赛作品封面，作品署名见审阅来源"></figure>
+      <figure class="pic"><img decoding="async" class="poster-faces" src="assets/19a29fb101caa63c7e03.jpg" alt="原稿保留的参赛作品封面，作品署名见审阅来源"></figure><figure class="pic"><img decoding="async" class="poster-head" src="assets/8bf32293d2907ceb6633.jpg" alt="原稿保留的参赛作品封面，作品署名见审阅来源"></figure><figure class="pic"><img decoding="async" src="assets/a0b8bef17ab453eb5cc7.jpg" alt="原稿保留的参赛作品封面，作品署名见审阅来源"></figure><figure class="pic"><img decoding="async" src="assets/57baf182ab16b7375f10.jpg" alt="原稿保留的参赛作品封面，作品署名见审阅来源"></figure>
+      <figure class="pic"><img decoding="async" src="assets/aaacf8d42b64a9632bd8.jpg" alt="原稿保留的参赛作品封面，作品署名见审阅来源"></figure><figure class="pic"><img decoding="async" src="assets/4024dcaa88688471475e.jpg" alt="原稿保留的参赛作品封面，作品署名见审阅来源"></figure><figure class="pic"><img decoding="async" src="assets/82367c2876d0ba1aa7e1.jpg" alt="原稿保留的参赛作品封面，作品署名见审阅来源"></figure><figure class="pic"><img decoding="async" src="assets/471265bdb54cf4086287.jpg" alt="原稿保留的参赛作品封面，作品署名见审阅来源"><figcaption>获奖作品</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section class="slide talk" data-sec="PART 03 · 一起做科幻" data-sec-en="Part 03" data-theme="做出来越来越容易，想清楚越来越珍贵">
+  <div class="body" style="justify-content:space-between;padding:70px 0 56px">
+    <div class="in" style="display:flex;gap:40px;width:62%"><div style="flex:1;border-top:6px solid var(--line);padding-top:18px"><div class="mono" style="font-size:18px;color:var(--muted)">PART 01</div><div style="font-size:30px;font-weight:500;margin-top:8px;color:var(--muted)">为什么是现在</div></div><div style="flex:1;border-top:6px solid var(--line);padding-top:18px"><div class="mono" style="font-size:18px;color:var(--muted)">PART 02</div><div style="font-size:30px;font-weight:500;margin-top:8px;color:var(--muted)">谁在做</div></div><div style="flex:1;border-top:6px solid var(--brand-lime);padding-top:18px"><div class="mono" style="font-size:18px;color:var(--ink)">PART 03</div><div style="font-size:30px;font-weight:700;margin-top:8px;color:var(--ink)">一起做科幻</div></div></div>
+    <div>
+      <h1 class="in d1" style="font-size:140px;line-height:1.28">做出来越来越容易，<br><mark style="background:var(--brand-lime)">想清楚越来越珍贵</mark></h1>
+      <div class="en in d2" style="font-size:36px;margin-top:40px;color:var(--ink)">Making is getting easy. Knowing what to make is getting rare.</div>
+    </div>
+  </div>
+</section>
+
+<section data-slide-id="aj-review-11" class="slide" data-sec="科幻方向" data-sec-en="Sci-Fi, Already Happening" data-theme="从数字人演出，到可游玩的科幻世界">
+<div class="body"><h1 class="in">科幻方向，社区<mark>已经在做</mark></h1><div class="en in d1">From virtual performers to playable sci-fi worlds.</div><div class="in d2" style="margin-top:50px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px"><div class="card" style="padding:0"><figure class="pic" style="height:330px"><img decoding="async" src="assets/7dda7260a38fe2bf23d0.jpg" alt="尤栗 Yuri 上海外滩大会超现实 AI 音乐会，舞台主体取景" style="object-position:center"></figure><div style="padding:24px 26px 28px"><h3 style="font-size:32px">数字人 × 演出</h3><div class="tag">Digital Humans on Stage</div><div class="cap" style="font-size:21px;margin-top:12px">尤栗 Yuri · 上海外滩大会</div></div></div><div class="card" style="padding:0"><figure class="pic" style="height:330px"><img decoding="async" src="assets/9c6a274080b02540c5d9.jpg" alt="科幻机械巨物悬浮于稻田上方，与行走人物形成尺度对照" style="object-position:44% 50%"></figure><div style="padding:24px 26px 28px"><h3 style="font-size:32px">AIGC 科幻视觉</h3><div class="tag">AI-Generated Sci-Fi Worlds</div><div class="cap" style="font-size:21px;margin-top:12px">机械巨物 × 未来城市</div></div></div><div class="card" style="padding:0"><figure class="pic" style="height:330px;background:#080808"><video data-slide-preview controls muted loop playsinline preload="none" aria-label="深圳龙岗穹顶影像视角预览，8 秒静音片段" poster="assets/d62c799651fcfb38b22e.jpg" style="display:block;width:100%;height:100%;object-fit:contain;background:#080808"><source src="assets/4d9854f6307a673d5a21.mp4" type="video/mp4">当前浏览器不支持视频播放。</video></figure><div style="padding:24px 26px 28px"><h3 style="font-size:32px">穹顶影像 × 沉浸体验</h3><div class="tag">Immersive Dome Visuals</div><div class="cap" style="font-size:21px;margin-top:12px">深圳龙岗 · 穹顶影像预览</div></div></div><div class="card" style="padding:0"><figure class="pic" style="height:330px"><img decoding="async" src="assets/7dc66b4622f98d6e5453.jpg" alt="2026机械漫游游戏作品截图候选"></figure><div style="padding:24px 26px 28px"><h3 style="font-size:32px">AI 科幻游戏</h3><div class="tag">AI Sci-Fi Games</div><div class="cap" style="font-size:21px;margin-top:12px">周杰 zdj × 宣酱 · 杭州站铜奖案例</div></div></div></div><div class="source-foot in d3">四类科幻实践：数字人演出、AIGC 视觉、穹顶影像与 AI 游戏。</div></div></section>
+
+<section data-slide-id="aj-review-12" class="slide" data-sec="合作设想 · 前店后厂" data-sec-en="A Proposed Collaboration" data-theme="让赛事里的相遇，在社区里继续">
+  <div class="body">
+    <h1 class="in">共创设想：<mark>天问</mark>前店，<mark>科梦</mark>后厂</h1>
+    <div class="en in d1">A proposed bridge from discovering stories to developing them together.</div>
+    <div class="row in d2" style="margin-top:56px;align-items:stretch;gap:0">
+      <div class="card" style="flex:1;padding:52px 60px"><div class="tag" style="margin:0">Front Store</div><h3 style="font-size:64px;margin-top:10px">前店 · 天问</h3>
+        <div style="font-size:30px;line-height:2;margin-top:26px">发现优秀作品，让作者被看见<br>展示开发成果<br>对接市场，把合作需求带回来</div></div>
+      <div style="width:300px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:26px">
+        <div style="font-size:24px;font-weight:600">优秀作品</div><div class="num" style="font-size:56px;line-height:1">→</div><div class="num" style="font-size:56px;line-height:1">←</div><div style="font-size:24px;font-weight:600">开发成果 · 样片</div>
+      </div>
+      <div class="card inv" style="flex:1;padding:52px 60px"><div class="tag" style="margin:0">Back Factory</div><h3 style="font-size:64px;margin-top:10px">后厂 · 科梦 × WaytoAGI</h3>
+        <div style="font-size:30px;line-height:2;margin-top:26px">汇聚创作者 · 技术平台 · OPC 团队<br>组织影像与数字角色共创<br>应用场景共创</div></div>
+    </div>
+  </div>
+</section>
+
+<section data-slide-id="aj-review-13" class="slide" data-sec="合作路径建议" data-sec-en="A Practical Starting Point" data-theme="先做出来看看，再决定怎么往下走">
+<div class="body"><h1 class="in">先挑一部作品，<mark>做个样片看看</mark></h1><div class="en in d1">Pick one story, make a short sample, then decide together.</div>
+<div class="in d2" style="margin-top:52px;display:grid;grid-template-columns:repeat(5,1fr);align-items:end"><div><div style="padding:0 24px 22px"><h3 style="font-size:46px">选作品</h3><div class="tag">Choose</div><div style="font-size:23px;color:var(--muted);margin-top:14px">先选一个值得展开的片段</div></div><div style="height:80px;background:var(--brand-lilac)"></div></div><div><div style="padding:0 24px 22px"><h3 style="font-size:46px">定边界</h3><div class="tag">Agree</div><div style="font-size:23px;color:var(--muted);margin-top:14px">授权 · 方向 · 分工</div></div><div style="height:115px;background:var(--brand-cyan)"></div></div><div><div style="padding:0 24px 22px"><h3 style="font-size:46px">做样片</h3><div class="tag">Prototype</div><div style="font-size:23px;color:var(--muted);margin-top:14px">社区创作者一起动手</div></div><div style="height:150px;background:var(--brand-violet)"></div></div><div><div style="padding:0 24px 22px"><h3 style="font-size:46px">看反馈</h3><div class="tag">Review</div><div style="font-size:23px;color:var(--muted);margin-top:14px">作者与合作伙伴共同评估</div></div><div style="height:185px;background:var(--brand-green)"></div></div><div><div style="padding:0 24px 22px"><h3 style="font-size:46px">谈转化</h3><div class="tag">Develop</div><div style="font-size:23px;color:var(--muted);margin-top:14px">再约定制作与后续合作</div></div><div style="height:220px;background:var(--brand-lime)"></div></div></div>
+<div class="row in d3" style="margin-top:34px;gap:28px"><div class="card" style="flex:1;padding:26px 34px"><div class="tag" style="margin:0">已有实践可支持</div><div style="font-size:29px;margin-top:12px">组织学习与创作 · 原型共创 · 展示交流</div></div><div class="card" style="flex:1;padding:26px 34px"><div class="tag" style="margin:0">每个项目需要明确</div><div style="font-size:29px;margin-top:12px">授权范围 · 制作资源 · 交付标准 · 后续合作</div></div></div>
+<div class="source-foot in d3">本页为合作路径建议；未将赛事、课程或空间活动写成已验证的影视制作与发行全流程。</div></div></section>
+
+<section data-slide-id="aj-review-14" class="slide violet" data-sec="共创邀请" data-sec-en="Let's Work Together" data-theme="从一个场景、一段样片、一个互动原型开始" style="background:var(--brand-violet)">
+<div class="body" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:64px;align-items:center">
+  <div class="in">
+    <div class="mono" style="font-size:20px">An open invitation · 共创从相遇开始</div>
+    <h1 style="font-size:90px;margin-top:24px">想开发作品，<br>来科梦，<mark>一起做</mark></h1>
+    <div class="en" style="color:var(--ink);font-size:30px;line-height:1.5">Bring your story. Meet your collaborators.</div>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;margin-top:36px">
+      <div style="border-top:2px solid var(--ink);padding-top:18px"><h3 style="font-size:34px">带着作品</h3><p style="font-size:23px;line-height:1.65;margin-top:10px">作家 · 出版机构<br>版权方</p></div>
+      <div style="border-top:2px solid var(--ink);padding-top:18px"><h3 style="font-size:34px">带着能力</h3><p style="font-size:23px;line-height:1.65;margin-top:10px">AI 创作者<br>OPC 团队</p></div>
+      <div style="border-top:2px solid var(--ink);padding-top:18px"><h3 style="font-size:34px">带着需求</h3><p style="font-size:23px;line-height:1.65;margin-top:10px">技术平台<br>产业机构</p></div>
+    </div>
+    <div style="margin-top:34px;background:rgba(255,255,255,.35);padding:22px 28px;font-size:25px;line-height:1.7">先带来：作品简介 · 想做的形态<br>时间节点 · 可投入的预算与资源</div>
+  </div>
+  <figure class="pic in d2" style="height:710px;background:transparent;display:flex;flex-direction:column;align-items:stretch"><img decoding="async" src="assets/bf9137d4faf4090f724d.jpg" alt="成都科梦社区共创现场，参与者围桌使用电脑交流创作" style="position:static;inset:auto;width:100%;height:660px;object-fit:cover;object-position:center bottom;flex:none"><figcaption style="position:static;align-self:flex-start;margin-top:12px;flex:none">成都科梦 · 一起学习，一起创作</figcaption></figure>
+</div></section>
+
+<section data-slide-id="aj-review-15" class="slide" data-sec="谢谢" data-sec-en="Thank You" data-theme="好故事，我们一起把它做出来">
+<div class="body" style="align-items:center;text-align:center">
+  <div class="mono muted in" style="font-size:22px">WaytoAGI · Connect &amp; Create</div>
+  <h1 class="in" style="font-size:88px;margin-top:18px">好故事，我们<mark>一起</mark>把它做出来</h1>
+  <div class="en in d1" style="font-family:var(--font-sans);font-size:32px;margin-top:18px">打造原生 AI 社区，让更多人因 AI 而强大</div>
+  <div class="in d2" style="width:2160px;max-width:100%;margin-top:36px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:40px;text-align:left">
+    <div class="card" style="padding:36px;display:flex;align-items:center;gap:36px;border-top:5px solid var(--brand-lime)">
+      <img decoding="async" src="assets/b39acd0a497996ce6c26.png" alt="WaytoAGI 公众号二维码" style="width:430px;height:430px;display:block;object-fit:contain;background:#fff;image-rendering:pixelated;flex:none">
+      <div><div class="mono muted" style="font-size:22px">WaytoAGI</div><h3 style="font-size:46px;line-height:1.35;margin-top:16px">WaytoAGI<br>公众号</h3><div style="font-size:27px;line-height:1.7;color:var(--muted);margin-top:22px">获取社区活动<br>与参与入口</div></div>
+    </div>
+    <div class="card" style="padding:36px;display:flex;align-items:center;gap:36px;border-top:5px solid var(--brand-violet)">
+      <img decoding="async" src="assets/22ee18132491958e6cc7.jpg" alt="科梦星球二维码" style="width:430px;height:430px;display:block;object-fit:contain;background:#fff;flex:none">
+      <div><div class="mono muted" style="font-size:22px">Kormo</div><h3 style="font-size:46px;line-height:1.35;margin-top:16px">科梦星球</h3><div style="font-size:27px;line-height:1.7;color:var(--muted);margin-top:22px">扫码连接科梦<br>开启下一次共创</div></div>
+    </div>
+  </div>
+  <div class="in d3" style="font-size:26px;color:var(--muted);margin-top:26px">把今天的相遇，变成下一次共创</div>
+</div></section></div></div>
+<nav id="viewer-controls" aria-label="演示导航">
+  <button id="prev" aria-label="上一页" title="上一页">←</button>
+  <label for="page-picker" class="sr-only">选择页面</label><select id="page-picker"></select>
+  <span id="page-count" aria-live="polite"></span>
+  <button id="next" aria-label="下一页" title="下一页">→</button>
+  <button id="fullscreen" aria-label="全屏观看" title="全屏观看">全屏</button>
+</nav>
+<div id="prog"></div><div id="hint">← → 翻页 · F 全屏<span class="mobile-hint"> · 横屏观看更清晰</span></div>
+<script>
+(function(){
+const LOGO="assets/91f9d4ad17291df79dc7.png";
+const stage=document.getElementById('stage'),slides=[...document.querySelectorAll('.slide')],N=slides.length;
+const prog=document.getElementById('prog'),picker=document.getElementById('page-picker'),counter=document.getElementById('page-count');
+const prev=document.getElementById('prev'),next=document.getElementById('next');
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+slides.forEach((s,i)=>{
+ const t=document.createElement('div');t.className='frame-top';t.innerHTML=`<div class="brand-pair"><img src="${LOGO}" alt="WaytoAGI"><span class="brand-divider" aria-hidden="true"></span><img class="kormo-logo" src="assets/kormo-black.png" alt="科梦 KORMO 成都科梦 OPC 社区"></div><div class="lab"><b>${esc(s.dataset.sec||'')}</b>${esc(s.dataset.secEn||'')}</div><div class="lab">${String(i+1).padStart(2,'0')} / ${N}</div>`;
+ const b=document.createElement('div');b.className='frame-bot';b.innerHTML=`<div>${esc(s.dataset.theme||'')}</div><div>共学 · 共创 · 共享 · 共进</div>`;s.prepend(t);s.appendChild(b);
+ const option=document.createElement('option');option.value=String(i);option.textContent=String(i+1).padStart(2,'0')+' · '+(s.dataset.sec||'');picker.appendChild(option);
+});
+function fit(){stage.style.transform=`scale(${Math.min(innerWidth/2520,Math.max(1,innerHeight-72)/1080)})`}
+addEventListener('resize',fit);fit();
+let cur=0;
+const videos=[...document.querySelectorAll('video[data-slide-preview]')];
+function syncMedia(){videos.forEach(v=>{if(v.closest('.slide')!==slides[cur]||document.hidden){v.pause();return}if(!matchMedia('(prefers-reduced-motion: reduce)').matches){v.muted=true;const p=v.play();if(p)p.catch(()=>{})}})}
+function go(n){cur=Math.max(0,Math.min(N-1,Number.isFinite(n)?n:0));slides.forEach((s,i)=>{s.classList.toggle('on',i===cur);s.setAttribute('aria-hidden',String(i!==cur));s.inert=i!==cur});prog.style.width=(cur+1)/N*100+'%';picker.value=String(cur);counter.textContent=(cur+1)+' / '+N;prev.disabled=cur===0;next.disabled=cur===N-1;try{history.replaceState(null,'','#'+(cur+1))}catch(e){}syncMedia()}
+function full(){if(document.fullscreenElement){document.exitFullscreen?.().catch(()=>{})}else{document.documentElement.requestFullscreen?.().catch(()=>{})}}
+prev.onclick=()=>go(cur-1);next.onclick=()=>go(cur+1);picker.onchange=()=>go(Number(picker.value));document.getElementById('fullscreen').onclick=full;
+document.addEventListener('visibilitychange',syncMedia);
+addEventListener('hashchange',()=>go((parseInt(location.hash.slice(1),10)||1)-1));
+addEventListener('keydown',e=>{if(e.altKey||e.ctrlKey||e.metaKey||e.target.closest('input,textarea,select,video,[contenteditable=true]'))return;if(e.target.closest('button,a')&&['Enter',' '].includes(e.key))return;if(['ArrowRight','ArrowDown','PageDown',' ','Enter'].includes(e.key)){e.preventDefault();go(cur+1)}else if(['ArrowLeft','ArrowUp','PageUp','Backspace'].includes(e.key)){e.preventDefault();go(cur-1)}else if(e.key==='Home'){e.preventDefault();go(0)}else if(e.key==='End'){e.preventDefault();go(N-1)}else if(e.key.toLowerCase()==='f')full()});
+let touchX=null,touchY=null,touchAt=0;const vp=document.getElementById('viewport');
+vp.addEventListener('touchstart',e=>{if(e.target.closest('video')){touchX=null;return}touchX=e.touches[0].clientX;touchY=e.touches[0].clientY},{passive:true});
+vp.addEventListener('touchend',e=>{if(touchX===null)return;const dx=e.changedTouches[0].clientX-touchX,dy=e.changedTouches[0].clientY-touchY;touchAt=Date.now();if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy))go(cur+(dx<0?1:-1));touchX=null},{passive:true});
+vp.addEventListener('touchcancel',()=>{touchX=null},{passive:true});
+vp.addEventListener('click',e=>{if(Date.now()-touchAt<500||e.target.closest('a,button,video'))return;go(cur+(e.clientX<innerWidth/3?-1:1))});
+go((parseInt(location.hash.slice(1),10)||1)-1);
+})();
+</script></body></html>
